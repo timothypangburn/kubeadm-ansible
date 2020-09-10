@@ -3,6 +3,7 @@
   gather_facts: yes
   become: yes
   roles:
+    - { role: firewalld, tags: firewalld }
     - { role: docker, tags: docker }
 
 - hosts: master

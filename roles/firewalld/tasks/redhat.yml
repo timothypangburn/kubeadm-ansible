@@ -1,0 +1,85 @@
+---
+
+- name: Update system
+  dnf:
+    name: "*"
+    state: latest
+
+- name: Add Firewall Ports
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - 6443/tcp
+    - 2379-2380/tcp
+    - 10250-10252/tcp
+    - 10255/tcp
+    - 5404/tcp
+    - 5406/tcp
+    - 2224/tcp
+    - 3121/tcp
+    - 8285/tcp
+    - 8285/udp
+
+- name: Reload firewalld
+  systemd:
+    name: firewalld
+    state: reloaded
+
+- name: Stop firewalld
+  systemd:
+    name: firewalld
+    state: stopped
+  
+- name: Disable Selinux
+  command: setenforce 0
+
+- name: Install Kuberneties Tools
+  dnf:
+    name:
+      - kuberneties
+      - kubadm
+      - wget
+      - git
+      - containerd.io
+      - openswitch
+      - libibverbs
+      - gcc
+  state: latest
+
+- name: sysctl set net.bridge.bridge-nf-call-iptables=1
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: '1'
+    sysctl_set: yes
+    reload: no
+
+- name: sysctl set net.ipv4.ip_forward=0
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '0'
+    sysctl_set: yes
+    reload: yes
+
+- name: Set ip_forward
+  command: echo "1" > /proc/sys/net/ipv4/ip_forward
+
+- name: Disable Swap
+  command: sed -i '/swap/d' /etc/fstab
+
+- command: swapoff -a
+
+- name: Install Go
+  dnf:
+    name: go
+    state: latest
+
+
+
+    
+
+
+
+
